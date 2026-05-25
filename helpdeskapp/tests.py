@@ -335,7 +335,116 @@ class DemandeViewTest(TestCase):
 
 
 @patch('helpdeskapp.views.WeatherService')
-class DomaineViewTest(TestCase):
+class UtilisateurViewTest(TestCase):
+
+    def setUp(self):
+        self.http_client = Client()
+        self.admin = make_admin()
+        self.user = make_client()
+        self.http_client.login(username='admin1', password='testpass123')
+
+    def test_list_utilisateur(self, _):
+        response = self.http_client.get(reverse('list_utilisateur'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_detail_utilisateur(self, _):
+        response = self.http_client.get(reverse('utilisateur_detail', args=[self.user.pk]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_add_user_get(self, _):
+        response = self.http_client.get(reverse('add_user'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_add_user_post(self, _):
+        response = self.http_client.post(reverse('add_user'), {
+            'nom': 'Nouveau', 'prenom': 'User',
+            'telephone': '0600000001', 'adresse': '1 rue test',
+            'email': 'new@test.com', 'password': 'pass123',
+            'role': 'client'
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Utilisateur.objects.filter(email='new@test.com').exists())
+
+    def test_add_user_missing_fields(self, _):
+        response = self.http_client.post(reverse('add_user'), {
+            'nom': '', 'prenom': '', 'telephone': '',
+            'email': '', 'password': '', 'role': ''
+        })
+        self.assertEqual(response.status_code, 200)
+
+    def test_update_user_get(self, _):
+        response = self.http_client.get(reverse('update_user', args=[self.user.pk]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_update_user_post(self, _):
+        response = self.http_client.post(reverse('update_user', args=[self.user.pk]), {
+            'nom': 'Modifié', 'prenom': 'Prenom',
+            'telephone': '0600000002', 'adresse': '2 rue test',
+            'email': 'modifie@test.com', 'role': 'client', 'password': ''
+        })
+        self.assertEqual(response.status_code, 302)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.nom, 'Modifié')
+
+    def test_delete_user_get(self, _):
+        response = self.http_client.get(reverse('delete_user', args=[self.user.pk]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_delete_user_post(self, _):
+        response = self.http_client.post(reverse('delete_user', args=[self.user.pk]))
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Utilisateur.objects.filter(pk=self.user.pk).exists())
+
+
+@patch('helpdeskapp.views.WeatherService')
+class DemandeUpdateViewTest(TestCase):
+
+    def setUp(self):
+        self.http_client = Client()
+        self.client_user = make_client()
+        self.tech = make_technicien()
+        self.http_client.login(username='client1', password='testpass123')
+        self.demande = Demande.objects.create(
+            intitule='Test', description='Desc', client=self.client_user
+        )
+
+    def test_update_demande_get(self, _):
+        response = self.http_client.get(reverse('update_demande', args=[self.demande.pk]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_update_demande_post(self, _):
+        response = self.http_client.post(reverse('update_demande', args=[self.demande.pk]), {
+            'intitule': 'Modifié', 'description': 'Nouvelle desc',
+            'client': self.client_user.pk, 'technicien': self.tech.pk
+        })
+        self.assertEqual(response.status_code, 302)
+        self.demande.refresh_from_db()
+        self.assertEqual(self.demande.intitule, 'Modifié')
+
+
+@patch('helpdeskapp.views.WeatherService')
+class WeatherApiViewTest(TestCase):
+
+    def setUp(self):
+        self.http_client = Client()
+        self.user = make_client()
+        self.http_client.login(username='client1', password='testpass123')
+
+    def test_weather_api_success(self, mock_weather_cls):
+        mock_weather_cls.return_value.get_weather.return_value = {
+            'city': 'Paris', 'temperature': 15
+        }
+        response = self.http_client.get(reverse('weather_api') + '?city=Paris')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data['success'])
+
+    def test_weather_api_failure(self, mock_weather_cls):
+        mock_weather_cls.return_value.get_weather.return_value = None
+        response = self.http_client.get(reverse('weather_api'))
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertFalse(data['success'])
 
     def setUp(self):
         self.http_client = Client()

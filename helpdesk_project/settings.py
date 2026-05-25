@@ -52,22 +52,37 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'helpdesk_project.wsgi.application'
 
-# Database — uses PostgreSQL when DATABASE_URL is set, otherwise SQLite
-DATABASE_URL = config('DATABASE_URL', default=None)
+# Database — supporte PostgreSQL (postgres://), MySQL (mysql://) et SQLite (pas d'URL)
+import os as _os
+DATABASE_URL = _os.environ.get('DATABASE_URL') or config('DATABASE_URL', default='')
 
 if DATABASE_URL:
     import re
-    m = re.match(r'postgres://([^:]+):([^@]+)@([^:]+):(\d+)/(.+)', DATABASE_URL)
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': m.group(5),
-            'USER': m.group(1),
-            'PASSWORD': m.group(2),
-            'HOST': m.group(3),
-            'PORT': m.group(4),
+    if DATABASE_URL.startswith('postgres'):
+        m = re.match(r'postgres(?:ql)?://([^:]+):([^@]+)@([^:]+):(\d+)/(.+)', DATABASE_URL)
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': m.group(5),
+                'USER': m.group(1),
+                'PASSWORD': m.group(2),
+                'HOST': m.group(3),
+                'PORT': m.group(4),
+            }
         }
-    }
+    elif DATABASE_URL.startswith('mysql'):
+        m = re.match(r'mysql://([^:]+):([^@]+)@([^:]+):(\d+)/(.+)', DATABASE_URL)
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.mysql',
+                'NAME': m.group(5),
+                'USER': m.group(1),
+                'PASSWORD': m.group(2),
+                'HOST': m.group(3),
+                'PORT': m.group(4),
+                'OPTIONS': {'charset': 'utf8mb4'},
+            }
+        }
 else:
     DATABASES = {
         'default': {
