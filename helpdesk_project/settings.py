@@ -1,5 +1,9 @@
+import os
+import re
+import sys
 from pathlib import Path
-from decouple import config, Csv
+
+from decouple import Csv, config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -24,7 +28,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # serve static files in production
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -52,12 +56,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'helpdesk_project.wsgi.application'
 
-# Database — supporte PostgreSQL (postgres://), MySQL (mysql://) et SQLite (pas d'URL)
-import os as _os
-DATABASE_URL = _os.environ.get('DATABASE_URL') or config('DATABASE_URL', default='')
+# Database — PostgreSQL (postgres://), MySQL (mysql://) ou SQLite (pas d'URL)
+DATABASE_URL = os.environ.get('DATABASE_URL') or config('DATABASE_URL', default='')
 
 if DATABASE_URL:
-    import re
     if DATABASE_URL.startswith('postgres'):
         m = re.match(r'postgres(?:ql)?://([^:]+):([^@]+)@([^:]+):(\d+)/(.+)', DATABASE_URL)
         DATABASES = {
@@ -98,8 +100,6 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# Use a fast password hasher during tests
-import sys
 if 'test' in sys.argv:
     PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']
 
@@ -114,10 +114,8 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Weather API
 OPENWEATHER_API_KEY = config('OPENWEATHER_API_KEY', default='')
 
-# Cache
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',

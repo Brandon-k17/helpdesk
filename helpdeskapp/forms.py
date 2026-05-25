@@ -1,7 +1,8 @@
-from .models import *
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .models import Utilisateur
+
+from .models import Demande, Domaine, Utilisateur
+
 
 class InscriptionForm(UserCreationForm):
     nom = forms.CharField(
@@ -44,7 +45,7 @@ class InscriptionForm(UserCreationForm):
         max_length=150,
         widget=forms.TextInput(attrs={
             'class': 'input input-bordered w-full',
-            'placeholder': 'Nom d\'utilisateur'
+            'placeholder': "Nom d'utilisateur"
         })
     )
     password1 = forms.CharField(
@@ -59,11 +60,11 @@ class InscriptionForm(UserCreationForm):
             'placeholder': 'Confirmer le mot de passe'
         })
     )
-    
+
     class Meta:
         model = Utilisateur
         fields = ['username', 'nom', 'prenom', 'adresse', 'email', 'telephone', 'password1', 'password2']
-    
+
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
@@ -71,7 +72,7 @@ class InscriptionForm(UserCreationForm):
         user.prenom = self.cleaned_data['prenom']
         user.adresse = self.cleaned_data['adresse']
         user.telephone = self.cleaned_data['telephone']
-        user.role = 'client'  # Par défaut, nouveau utilisateur = client
+        user.role = 'client'
         if commit:
             user.save()
         return user
@@ -81,7 +82,7 @@ class ConnexionForm(AuthenticationForm):
     username = forms.CharField(
         widget=forms.TextInput(attrs={
             'class': 'input input-bordered w-full',
-            'placeholder': 'Nom d\'utilisateur'
+            'placeholder': "Nom d'utilisateur"
         })
     )
     password = forms.CharField(
@@ -91,16 +92,17 @@ class ConnexionForm(AuthenticationForm):
         })
     )
 
+
 class DomaineForm(forms.ModelForm):
     class Meta:
         model = Domaine
         fields = ['intitule', 'description']
         widgets = {
-            'intitule': forms.TextInput(attrs= {
+            'intitule': forms.TextInput(attrs={
                 'class': 'input w-full',
                 'placeholder': 'Entrer un domaine'
             }),
-            'description': forms.Textarea(attrs= {
+            'description': forms.Textarea(attrs={
                 'class': 'textarea w-full h-24',
                 'placeholder': 'Décrire en quelques mots le domaine'
             })
@@ -127,7 +129,7 @@ class DemandeForm(forms.ModelForm):
                 'class': 'select select-bordered w-full'
             })
         }
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['client'].queryset = Utilisateur.objects.filter(role='client')

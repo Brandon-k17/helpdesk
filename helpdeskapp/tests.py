@@ -21,6 +21,7 @@ def make_client(**kwargs):
     u.save()
     return u
 
+
 def make_technicien(**kwargs):
     defaults = dict(username='tech1', nom='Martin', prenom='Paul',
                     email='tech@test.com', role='technicien')
@@ -29,6 +30,7 @@ def make_technicien(**kwargs):
     u.set_password('testpass123')
     u.save()
     return u
+
 
 def make_admin(**kwargs):
     defaults = dict(username='admin1', nom='Admin', prenom='Super',
@@ -445,6 +447,10 @@ class WeatherApiViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertFalse(data['success'])
+
+
+@patch('helpdeskapp.views.WeatherService')
+class DomaineViewTest(TestCase):
 
     def setUp(self):
         self.http_client = Client()
