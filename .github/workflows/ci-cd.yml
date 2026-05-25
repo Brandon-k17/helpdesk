@@ -120,7 +120,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   # ────────────────────────────────────────────────────────────────────
-  # ÉTAPE 4 — Package & Déploiement FTP sur o2switch (en parallèle)
+  # ÉTAPE 3B — Déploiement FTP sur o2switch (en parallèle)
   # ────────────────────────────────────────────────────────────────────
   deploy-ftp:
     name: Deploy to o2switch (FTP)
@@ -150,6 +150,9 @@ jobs:
           DJANGO_SETTINGS_MODULE: helpdesk_project.settings
         run: python manage.py collectstatic --noinput
 
+      - name: Create .deploy_pending trigger
+        run: touch .deploy_pending
+
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -173,17 +176,5 @@ jobs:
             *.log
             .github/**
 
-      - name: Run post_deploy.sh via SSH
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          script: |
-            chmod +x ${{ secrets.FTP_REMOTE_PATH }}/post_deploy.sh
-            DEPLOY_PATH=${{ secrets.FTP_REMOTE_PATH }} \
-            bash ${{ secrets.FTP_REMOTE_PATH }}/post_deploy.sh
-
       - name: Deployment complete
-        run: echo "✅ Déploiement o2switch terminé"
+        run: echo "✅ Code déployé — le cron o2switch va lancer post_deploy.sh automatiquement"
