@@ -8,6 +8,7 @@ on:
 
 env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/helpdesk
+  PYTHON_VERSION: '3.13'
 
 jobs:
 
@@ -18,6 +19,7 @@ jobs:
     name: Lint & Test
     runs-on: ubuntu-latest
 
+    # mysqlclient nécessite les mêmes dépendances système que dans le Dockerfile
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -25,11 +27,20 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+      # ✅ FIX : même dépendances système que le builder Docker
+      - name: Install system dependencies (mysqlclient + psycopg2)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            gcc libpq-dev pkg-config default-libmysqlclient-dev
+
+      - name: Install Python dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Lint with flake8
         run: |
@@ -55,7 +66,7 @@ jobs:
           path: coverage.xml
 
   # ────────────────────────────────────────────────────────────────────
-  # ÉTAPE 2 — Code Quality (SonarCloud) — échoue si couverture < 80%
+  # ÉTAPE 2 — Code Quality (SonarCloud)
   # ────────────────────────────────────────────────────────────────────
   sonarcloud:
     name: Code Quality (SonarCloud)
@@ -120,7 +131,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   # ────────────────────────────────────────────────────────────────────
-  # ÉTAPE 3B — Déploiement FTP sur o2switch (en parallèle)
+  # ÉTAPE 3B — Déploiement FTP sur o2switch
   # ────────────────────────────────────────────────────────────────────
   deploy-ftp:
     name: Deploy to o2switch (FTP)
@@ -135,10 +146,17 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
 
-      - name: Install dependencies
+      # ✅ FIX : mêmes dépendances système nécessaires pour collectstatic
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            gcc libpq-dev pkg-config default-libmysqlclient-dev
+
+      - name: Install Python dependencies
         run: pip install -r requirements.txt
 
       - name: Collect static files
@@ -153,7 +171,20 @@ jobs:
       - name: Create .deploy_pending trigger
         run: touch .deploy_pending
 
-      - name: Deploy via FTP
+      # ────────────────────────────────────────────────────────────────
+      # ✅ FIX FTP : staticfiles/ exclu du transfert FTP
+      #
+      # POURQUOI le FTP coupait ?
+      #   → 199 fichiers dont ~150 dans staticfiles/ (admin CSS/JS)
+      #   → o2switch coupe les connexions FTPS longues (FIN packet ~38s)
+      #
+      # SOLUTION :
+      #   1. staticfiles/ exclu de l'upload FTP (gain ~150 fichiers)
+      #   2. Les fichiers statiques sont servis par Django via WhiteNoise
+      #      (ou copiés une seule fois manuellement côté serveur)
+      #   3. timeout: 30 → 0 (désactivé) pour les uploads longs
+      # ────────────────────────────────────────────────────────────────
+      - name: Deploy via FTP (code source uniquement)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST }}
@@ -164,17 +195,27 @@ jobs:
           local-dir: ./
           server-dir: ${{ secrets.FTP_REMOTE_PATH }}
           dangerous-clean-slate: false
+          # ✅ timeout désactivé pour éviter le FIN packet sur connexions longues
+          timeout: 0
           exclude: |
             **/.git*
             **/.git*/**
             **/__pycache__/**
             **/*.pyc
+            **/*.pyc/**
             .env
             db.sqlite3
             venv/**
             env/**
             *.log
             .github/**
+            .vscode/**
+            .coverage
+            .coveragerc
+            sonar-project.properties
+            staticfiles/**
+            mediafiles/**
+            node_modules/**
 
       - name: Deployment complete
         run: echo "✅ Code déployé — le cron o2switch va lancer post_deploy.sh automatiquement"
