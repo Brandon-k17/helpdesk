@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}Détail de la Demande : {{ demande.intitule }}{% endblock %}
+
+{% block content %}
+<main class="container py-5" aria-labelledby="requestDetailHeading">
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10 col-md-12">
+            
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden request-detail-card">
+                
+                <header class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center p-4 bg-primary bg-gradient text-white">
+                    
+                    <h1 class="h3 mb-2 mb-md-0 fw-bold" id="requestDetailHeading">
+                        <i class="fas fa-file-invoice me-2"></i>Détail de la Demande
+                    </h1>
+                    
+                    {% with statut=demande.statut %}
+                    <span class="badge 
+                        {% if statut == 'en attente' %}bg-warning text-dark border border-2 border-light
+                        {% elif statut == 'en cours' %}bg-info text-white border border-2 border-light
+                        {% else %}bg-success text-white border border-2 border-light{% endif %} 
+                        fs-6 py-2 px-3 rounded-pill fw-bold shadow-sm"
+                        aria-label="Statut actuel de la demande : {{ demande.get_statut_display }}">
+                        
+                        {% if statut == 'en attente' %}<i class="fas fa-pause-circle me-2"></i>
+                        {% elif statut == 'en cours' %}<i class="fas fa-sync-alt fa-spin me-2"></i>
+                        {% else %}<i class="fas fa-check-circle me-2"></i>{% endif %}
+                        
+                        {{ demande.get_statut_display|upper }}
+                    </span>
+                    {% endwith %}
+                </header>
+                
+                <div class="card-body p-4 p-md-5">
+                    
+                    <dl class="row g-4 mb-5 fs-5 detail-list">
+                        
+                        <div class="col-12 border-bottom pb-3">
+                            <dt class="col-sm-3 fw-bold text-uppercase text-primary">Intitulé :</dt>
+                            <dd class="col-sm-9 mb-0 text-break">{{ demande.intitule }}</dd>
+                        </div>
+                        
+                        <div class="col-lg-6 col-12 border-bottom pb-3">
+                            <dt class="col-sm-4 fw-bold text-uppercase text-muted">Client :</dt>
+                            <dd class="col-sm-8 mb-0">{{ demande.client }}</dd>
+                        </div>
+
+                        <div class="col-lg-6 col-12 border-bottom pb-3">
+                            <dt class="col-sm-4 fw-bold text-uppercase text-muted">Technicien :</dt>
+                            <dd class="col-sm-8 mb-0">
+                                {% if demande.technicien %}{{ demande.technicien }}{% else %}<em class="text-secondary">Non attribué</em>{% endif %}
+                            </dd>
+                        </div>
+                        
+                        <div class="col-12 border-bottom pb-3">
+                            <dt class="col-sm-3 fw-bold text-uppercase text-muted">Date de Création :</dt>
+                            <dd class="col-sm-9 mb-0">
+                                <i class="far fa-calendar-alt me-2 text-info"></i>{{ demande.datedemande|date:"d F Y" }}
+                                <span class="text-secondary ms-3"><i class="far fa-clock me-1"></i> à {{ demande.datedemande|date:"H:i" }}</span>
+                            </dd>
+                        </div>
+
+                        <div class="col-12 pt-3">
+                            <dt class="col-sm-3 fw-bold text-uppercase text-primary mb-2">Description :</dt>
+                            <dd class="col-sm-12 p-3 bg-light border border-secondary-subtle rounded-3 description-box" role="note">
+                                {% if demande.description %}
+                                    <p class="mb-0 text-break text-dark">{{ demande.description|linebreaksbr }}</p>
+                                {% else %}
+                                    <p class="mb-0 text-muted fst-italic">Aucune description détaillée n'a été fournie par le client.</p>
+                                {% endif %}
+                            </dd>
+                        </div>
+                    </dl>
+
+                    <div class="d-flex justify-content-end gap-3 flex-wrap pt-4 border-top">
+                        
+                        <a href="{% url 'list_demande' %}" class="btn btn-primary d-flex align-items-center gap-2 px-4 py-2 fw-semibold shadow-sm" aria-label="Retourner à la liste des demandes">
+                            <i class="fas fa-list-ul"></i> Retour à la Liste
+                        </a>
+                        
+                        <a href="{% url 'update_demande' demande.pk %}" class="btn btn-outline-warning d-flex align-items-center gap-2 px-4 py-2 fw-semibold" aria-label="Modifier la demande actuelle">
+                            <i class="fas fa-edit"></i> Modifier
+                        </a>
+                        
+                        <a href="{% url 'delete_demande' demande.pk %}" class="btn btn-outline-danger d-flex align-items-center gap-2 px-4 py-2 fw-semibold" aria-label="Supprimer la demande">
+                            <i class="fas fa-trash-alt"></i> Supprimer
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<style>
+    /* Améliorations CSS pour l'attrait visuel */
+    .request-detail-card {
+        /* Transition subtile pour un effet professionnel */
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        border-top: none !important; /* Retire la bordure du haut du style initial */
+    }
+    .request-detail-card:hover {
+        /* Légère élévation au survol */
+        transform: translateY(-2px);
+        box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    .detail-list dt {
+        /* Style clair pour les étiquettes de données */
+        font-size: 0.8rem;
+        letter-spacing: 0.05rem;
+    }
+    
+    .description-box p {
+        /* Assure que le texte de la description est bien lisible */
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+</style>
+{% endblock %}

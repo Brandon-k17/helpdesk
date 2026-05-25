@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Liste des domaines
+{% endblock %} 
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-6xl">
+    <!-- En-tête -->
+    <div class="mb-8">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-3">
+            <div>
+                <h1 class="text-4xl font-bold text-gray-800 mb-2">
+                    <i class="fa fa-folder-open text-blue-600 mr-3"></i>
+                    Gestion des Domaines
+                </h1>
+                <p class="text-gray-600">
+                    <i class="fa fa-info-circle mr-2"></i>
+                    <span class="font-semibold">{{ domaines|length }}</span> domaine(s) enregistré(s)
+                </p>
+            </div>
+            <a href="{% url 'add_domaine' %}" 
+               class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
+                <i class="fa fa-plus-circle mr-2 text-lg"></i>
+                Nouveau Domaine
+            </a>
+        </div>
+        <div class="h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full"></div>
+    </div>
+
+    <!-- Liste des domaines -->
+    {% if domaines %}
+        <div class="grid gap-6">
+            {% for domaine in domaines %}
+            <div class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 group">
+                <div class="flex flex-col md:flex-row justify-between items-stretch">
+                    <!-- Contenu principal -->
+                    <div class="flex-1 p-6">
+                        <div class="flex items-start gap-4">
+                            <!-- Icône décorative -->
+                            <div class="hidden sm:flex items-center justify-center w-14 h-14 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex-shrink-0 group-hover:from-blue-200 group-hover:to-purple-200 transition-all duration-300">
+                                <i class="fa fa-tag text-2xl text-blue-600"></i>
+                            </div>
+                            
+                            <!-- Informations -->
+                            <div class="flex-1 min-w-0">
+                                <h2 class="text-xl font-bold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors duration-200">
+                                    {{ domaine.intitule }}
+                                </h2>
+                                <p class="text-gray-600 leading-relaxed">
+                                    {{ domaine.description|truncatewords:30 }}
+                                </p>
+                                
+                                <!-- Badge ou métadonnées supplémentaires -->
+                                <div class="mt-3 flex items-center gap-2 text-xs text-gray-500">
+                                    <span class="px-2 py-1 bg-blue-50 text-blue-700 rounded-full font-medium">
+                                        <i class="fa fa-clock-o mr-1"></i>
+                                        Domaine actif
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex md:flex-col items-stretch md:items-center justify-end gap-0 border-t md:border-t-0 md:border-l border-gray-100 bg-gray-50">
+                        <a href="{% url 'update_domaine' domaine.id %}" 
+                           class="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-4 hover:bg-blue-50 text-blue-600 hover:text-blue-700 font-medium transition-all duration-200 group/edit border-r md:border-r-0 md:border-b border-gray-100">
+                            <i class="fa fa-pencil text-lg group-hover/edit:scale-110 transition-transform duration-200"></i>
+                            <span class="hidden lg:inline">Modifier</span>
+                        </a>
+                        
+                        <a href="{% url 'delete_domaine' domaine.id %}" 
+                           class="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-4 hover:bg-red-50 text-red-600 hover:text-red-700 font-medium transition-all duration-200 group/delete"
+                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce domaine ?');">
+                            <i class="fa fa-trash text-lg group-hover/delete:scale-110 transition-transform duration-200"></i>
+                            <span class="hidden lg:inline">Supprimer</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- État vide -->
+        <div class="bg-white rounded-xl shadow-md p-12 text-center">
+            <div class="max-w-md mx-auto">
+                <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fa fa-folder-open text-5xl text-gray-400"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-3">
+                    Aucun domaine trouvé
+                </h3>
+                <p class="text-gray-600 mb-6">
+                    Commencez par créer votre premier domaine pour organiser vos données.
+                </p>
+                <a href="{% url 'add_domaine' %}" 
+                   class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200">
+                    <i class="fa fa-plus-circle mr-2"></i>
+                    Créer un domaine
+                </a>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Pagination (si nécessaire) -->
+    {% if domaines.has_other_pages %}
+    <div class="mt-8 flex justify-center">
+        <nav class="inline-flex rounded-lg shadow-sm">
+            {% if domaines.has_previous %}
+                <a href="?page={{ domaines.previous_page_number }}" 
+                   class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-50">
+                    <i class="fa fa-chevron-left"></i>
+                </a>
+            {% endif %}
+            
+            <span class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border-t border-b border-gray-300">
+                Page {{ domaines.number }} sur {{ domaines.paginator.num_pages }}
+            </span>
+            
+            {% if domaines.has_next %}
+                <a href="?page={{ domaines.next_page_number }}" 
+                   class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-50">
+                    <i class="fa fa-chevron-right"></i>
+                </a>
+            {% endif %}
+        </nav>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    /* Animations personnalisées */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .grid > div {
+        animation: fadeIn 0.4s ease-out forwards;
+    }
+    
+    .grid > div:nth-child(1) { animation-delay: 0.05s; }
+    .grid > div:nth-child(2) { animation-delay: 0.1s; }
+    .grid > div:nth-child(3) { animation-delay: 0.15s; }
+    .grid > div:nth-child(4) { animation-delay: 0.2s; }
+    .grid > div:nth-child(5) { animation-delay: 0.25s; }
+    
+    /* Effet de survol pour les cartes */
+    .group:hover {
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}

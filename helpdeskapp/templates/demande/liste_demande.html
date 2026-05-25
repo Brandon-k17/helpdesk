@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Liste des Demandes{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Liste des Demandes</h1>
+    <a href="{% url 'add_demande' %}" class="btn btn-primary">
+        <i class="fas fa-plus me-1"></i> Créer une demande
+    </a>
+</div>
+
+{% if demandes %}
+    <div class="table-responsive shadow-sm rounded">
+        <table class="table table-striped align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Intitulé</th>
+                    <th>Client</th>
+                    <th>Technicien</th>
+                    <th>Statut</th>
+                    <th>Date</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for demande in demandes %}
+                <tr>
+                    <td>{{ demande.intitule }}</td>
+                    <td>{{ demande.client }}</td>
+                    <td>{{ demande.technicien }}</td>
+                    <td>
+                        <span class="badge 
+                            {% if demande.statut == 'en attente' %}bg-warning
+                            {% elif demande.statut == 'en cours' %}bg-primary
+                            {% else %}bg-success{% endif %}">
+                            {{ demande.get_statut_display }}
+                        </span>
+                    </td>
+                    <td>{{ demande.datedemande|date:"d/m/Y H:i" }}</td>
+                    <td class="text-center">
+                        <a href="{% url 'detail_demande' demande.pk %}" class="btn btn-sm btn-info" title="Voir">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="{% url 'update_demande' demande.pk %}" class="btn btn-sm btn-warning" title="Modifier">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'delete_demande' demande.pk %}" class="btn btn-sm btn-danger" title="Supprimer">
+                            <i class="fas fa-trash-alt"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="alert alert-info d-flex justify-content-between align-items-center">
+        <span>Aucune demande trouvée.</span>
+        <a href="{% url 'add_demande' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i> Créer la première demande
+        </a>
+    </div>
+{% endif %}
+{% endblock %}

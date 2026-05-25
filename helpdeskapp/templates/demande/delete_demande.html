@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+
+{% block title %}Suppression : {{ demande.intitule }}{% endblock %}
+
+{% block content %}
+<main class="container py-5" aria-labelledby="delete-heading">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card delete-card shadow-lg border-0 rounded-4 overflow-hidden">
+
+                <!-- HEADER -->
+                <header class="p-4 text-white delete-header">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="delete-icon-box">
+                            <i class="fas fa-exclamation-triangle fa-xl text-warning"></i>
+                        </div>
+                        <div>
+                            <h1 class="h4 m-0 fw-bold" id="delete-heading">Confirmer la suppression</h1>
+                            <p class="m-0 opacity-90 small">Action requise</p>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- BODY -->
+                <div class="card-body p-4 bg-light">
+
+                    <!-- Section Titre de la demande -->
+                    <div class="text-center mb-4">
+                        <div class="bg-white p-4 rounded-3 shadow-sm border">
+                            <i class="fas fa-file-alt fa-3x text-primary mb-3"></i>
+                            <h3 class="h5 fw-bold text-dark mb-2">{{ demande.intitule }}</h3>
+                            <p class="text-muted mb-0 small">Créée le {{ demande.datedemande|date:"d/m/Y" }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Alert -->
+                    <div class="alert alert-warning border-0 rounded-3 shadow-sm" role="alert">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="fas fa-info-circle text-warning"></i>
+                            <strong class="text-dark">Attention requise</strong>
+                        </div>
+                        <p class="mb-0 text-dark">
+                            Cette action supprimera définitivement la demande et toutes ses données associées.
+                            <strong class="text-danger">Cette opération est irréversible.</strong>
+                        </p>
+                    </div>
+
+                    <!-- Informations supplémentaires -->
+                    <div class="row text-center g-3 mb-4">
+                        <div class="col-md-4">
+                            <div class="info-card p-3 bg-white rounded-2 border">
+                                <i class="fas fa-user text-primary mb-2"></i>
+                                <p class="small mb-0 fw-semibold">Client</p>
+                                <p class="small mb-0 text-dark">{{ demande.client }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="info-card p-3 bg-white rounded-2 border">
+                                <i class="fas fa-cogs text-success mb-2"></i>
+                                <p class="small mb-0 fw-semibold">Technicien</p>
+                                <p class="small mb-0 text-dark">{{ demande.technicien }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="info-card p-3 bg-white rounded-2 border">
+                                <i class="fas fa-tag text-info mb-2"></i>
+                                <p class="small mb-0 fw-semibold">Statut</p>
+                                <span class="badge {% if demande.statut == 'en attente' %}bg-warning{% elif demande.statut == 'en cours' %}bg-primary{% else %}bg-success{% endif %} small">
+                                    {{ demande.get_statut_display }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Formulaire -->
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex gap-3 justify-content-center border-top pt-4">
+                            <a href="{% url 'detail_demande' demande.pk %}"
+                               class="btn btn-outline-primary btn-lg d-flex align-items-center gap-2 px-4 rounded-3"
+                               aria-label="Retour à la demande">
+                                <i class="fas fa-arrow-left"></i>
+                                Retour
+                            </a>
+                            <button type="submit"
+                                    class="btn btn-delete btn-lg d-flex align-items-center gap-2 px-4 rounded-3 fw-semibold"
+                                    aria-label="Confirmer la suppression">
+                                <i class="fas fa-check"></i>
+                                Confirmer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Note informative -->
+            <div class="text-center mt-4">
+                <p class="text-muted small">
+                    <i class="fas fa-lightbulb text-warning me-1"></i>
+                    Conseil : Exportez les données importantes avant suppression
+                </p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<style>
+    :root {
+        --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --transition-smooth: all 0.3s ease;
+    }
+
+    .delete-header {
+        background: var(--gradient-primary);
+    }
+
+    .delete-icon-box {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 12px;
+        border-radius: 20px;
+    }
+
+    .delete-card {
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .delete-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .info-card {
+        transition: var(--transition-smooth);
+    }
+
+    .info-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn {
+        transition: var(--transition-smooth);
+        font-weight: 500;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-outline-primary {
+        border-width: 2px;
+    }
+
+    .btn-delete {
+        background: var(--gradient-primary);
+        color: white;
+        border: none;
+    }
+
+    .btn-delete:hover {
+        opacity: 0.95;
+        color: white;
+    }
+
+    .alert-warning {
+        background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
+        border: 1px solid #ffeaa7;
+    }
+
+    /* Animation icône d'attention */
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    .fa-exclamation-triangle {
+        animation: pulse 2s infinite;
+    }
+
+    /* Responsive */
+    @media (max-width: 576px) {
+        .btn-lg {
+            padding: 0.5rem 1rem !important;
+            font-size: 0.9rem;
+        }
+    }
+</style>
+
+{% endblock %}

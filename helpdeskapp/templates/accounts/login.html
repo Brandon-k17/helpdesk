@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-10 p-6 bg-base-200 rounded-lg shadow-lg">
+    <h1 class="text-2xl font-bold mb-6 text-center">Connexion | HelpDesk</h1>
+    
+    <form method="POST" class="space-y-4">
+        {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+        <div class="alert alert-error">
+            {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+        
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Nom d'utilisateur</span>
+            </label>
+            {{ form.username }}
+            {% if form.username.errors %}
+                <label class="label">
+                    <span class="label-text-alt text-error">{{ form.username.errors.0 }}</span>
+                </label>
+            {% endif %}
+        </div>
+        
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Mot de passe</span>
+            </label>
+            {{ form.password }}
+            {% if form.password.errors %}
+                <label class="label">
+                    <span class="label-text-alt text-error">{{ form.password.errors.0 }}</span>
+                </label>
+            {% endif %}
+        </div>
+        
+        <button type="submit" class="btn btn-primary w-full">
+            Se connecter
+        </button>
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'register' %}" class="link link-primary">
+                Créer un compte
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

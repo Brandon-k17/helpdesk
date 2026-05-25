@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Admin{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <h1 class="text-3xl font-bold">Dashboard Administrateur</h1>
+    
+    <!-- Statistiques -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="stat bg-base-200 rounded-lg shadow">
+            <div class="stat-title">Total Utilisateurs</div>
+            <div class="stat-value text-primary">{{ stats.total_users }}</div>
+        </div>
+        
+        <div class="stat bg-base-200 rounded-lg shadow">
+            <div class="stat-title">Clients</div>
+            <div class="stat-value text-secondary">{{ stats.clients }}</div>
+        </div>
+        
+        <div class="stat bg-base-200 rounded-lg shadow">
+            <div class="stat-title">Techniciens</div>
+            <div class="stat-value text-accent">{{ stats.techniciens }}</div>
+        </div>
+        
+        <div class="stat bg-base-200 rounded-lg shadow">
+            <div class="stat-title">Administrateurs</div>
+            <div class="stat-value">{{ stats.admins }}</div>
+        </div>
+    </div>
+    
+    <!-- Liste des utilisateurs -->
+    <div class="card bg-base-200 shadow-xl">
+        <div class="card-body">
+            <h2 class="card-title">Liste des Utilisateurs</h2>
+            
+            <div class="overflow-x-auto">
+                <table class="table table-zebra">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nom Complet</th>
+                            <th>Email</th>
+                            <th>Téléphone</th>
+                            <th>Rôle</th>
+                            <th>Date d'inscription</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.prenom }} {{ user.nom }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.telephone|default:"-" }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if user.role == 'admin' %}badge-error
+                                    {% elif user.role == 'technicien' %}badge-warning
+                                    {% else %}badge-success{% endif %}">
+                                    {{ user.get_role_display }}
+                                </span>
+                            </td>
+                            <td>{{ user.date_joined|date:"d/m/Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

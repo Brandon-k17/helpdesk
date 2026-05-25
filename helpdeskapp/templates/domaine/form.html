@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if domaine %}
+    Modifier Domaine
+{% else %}
+    Ajouter Domaine
+{% endif %}
+{% endblock %} 
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-4xl">
+    <!-- En-tête avec gradient -->
+    <div class="mb-8">
+        <div class="flex justify-between items-center mb-2">
+            <h1 class="text-3xl font-bold text-gray-800">
+                {% if domaine %}
+                    <i class="fa fa-edit text-blue-600 mr-2"></i>
+                    Modifier le Domaine
+                {% else %}
+                    <i class="fa fa-plus-circle text-green-600 mr-2"></i>
+                    Nouveau Domaine
+                {% endif %}
+            </h1>
+            <a href="{% url 'list_domaines' %}" 
+               class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md">
+                <i class="fa fa-list mr-2"></i>
+                Liste des Domaines
+            </a>
+        </div>
+        <div class="h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full w-24"></div>
+    </div>
+
+    <!-- Carte du formulaire -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="bg-gradient-to-r from-blue-50 to-purple-50 px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-700">
+                <i class="fa fa-info-circle text-blue-500 mr-2"></i>
+                Informations du Domaine
+            </h2>
+        </div>
+        
+        <form method="POST" class="p-8 space-y-6">
+            {% csrf_token %}
+            
+            <!-- Champ Intitulé -->
+            <div class="space-y-2">
+                <label for="{{ form.intitule.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fa fa-tag text-purple-500 mr-2"></i>
+                    Intitulé du Domaine
+                </label>
+                <div class="relative">
+                    {{ form.intitule }}
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fa fa-pencil text-gray-400"></i>
+                    </div>
+                </div>
+                {% if form.intitule.errors %}
+                    <div class="text-red-600 text-sm mt-1">
+                        {{ form.intitule.errors }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Champ Description -->
+            <div class="space-y-2">
+                <label for="{{ form.description.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fa fa-align-left text-purple-500 mr-2"></i>
+                    Description
+                </label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                    <div class="text-red-600 text-sm mt-1">
+                        {{ form.description.errors }}
+                    </div>
+                {% endif %}
+                <p class="text-xs text-gray-500 mt-1">
+                    <i class="fa fa-lightbulb-o mr-1"></i>
+                    Fournissez une description détaillée du domaine
+                </p>
+            </div>
+
+            <!-- Séparateur -->
+            <div class="border-t border-gray-200 my-6"></div>
+
+            <!-- Boutons d'action -->
+            <div class="flex justify-end space-x-3">
+                <a href="{% url 'list_domaines' %}" 
+                   class="inline-flex items-center px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md">
+                    <i class="fa fa-times mr-2"></i>
+                    Annuler
+                </a>
+                <button type="submit" 
+                        class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                    {% if domaine %}
+                        <i class="fa fa-check mr-2"></i>
+                        Mettre à jour
+                    {% else %}
+                        <i class="fa fa-save mr-2"></i>
+                        Enregistrer
+                    {% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Message d'aide en bas -->
+    <div class="mt-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+        <div class="flex items-start">
+            <i class="fa fa-info-circle text-blue-500 mt-1 mr-3"></i>
+            <div>
+                <p class="text-sm text-blue-800 font-medium">Astuce</p>
+                <p class="text-sm text-blue-700 mt-1">
+                    Assurez-vous que l'intitulé du domaine est unique et descriptif pour faciliter l'organisation.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Styles personnalisés pour les champs de formulaire */
+    input[type="text"],
+    textarea {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        padding-left: 2.5rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+        background-color: #fafafa;
+    }
+    
+    textarea {
+        padding-left: 1rem;
+        min-height: 120px;
+        resize: vertical;
+    }
+    
+    input[type="text"]:focus,
+    textarea:focus {
+        outline: none;
+        border-color: #8b5cf6;
+        background-color: white;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    }
+    
+    input[type="text"]:hover,
+    textarea:hover {
+        border-color: #c4b5fd;
+        background-color: white;
+    }
+    
+    /* Animation pour les erreurs */
+    .text-red-600 {
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{% endblock %}
