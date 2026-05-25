@@ -1,0 +1,14 @@
+[run]
+source = helpdeskapp
+
+[report]
+omit =
+    */migrations/*
+    */tests*
+    manage.py
+    */settings*
+    */wsgi*
+    */asgi*
+    create_*.py
+    venv/*
+    env/*
